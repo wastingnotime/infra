@@ -1,4 +1,4 @@
-
+### swarm
 
 In the `swarm` directory:
 ```bash
@@ -34,3 +34,30 @@ docker info | grep -i swarm
 docker node ls
 ```
 
+### iam
+
+In the `iam` directory:
+```bash
+# just in case
+export AWS_REGION=us-east-1
+
+terraform init
+terraform plan 
+terraform apply 
+```
+
+
+### ecr
+
+In the `ecr` directory:
+```bash
+# just in case
+export AWS_REGION=us-east-1
+
+terraform init
+terraform plan 
+terraform apply 
+```
+
+### todo
+* create a makefile
