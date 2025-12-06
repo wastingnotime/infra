@@ -52,6 +52,15 @@ resource "aws_iam_role_policy" "github_actions_ecr_policy" {
           "ecr:CompleteLayerUpload"
         ],
         Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "ssm:SendCommand",
+          "ssm:GetCommandInvocation",
+          "ssm:ListCommandInvocations"
+        ],
+        Resource = "*"
       }
     ]
   })
