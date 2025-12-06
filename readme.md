@@ -1,17 +1,15 @@
 ### swarm
 
-In the `swarm` directory:
+In the root directory:
 ```bash
 # just in case
 export AWS_REGION=us-east-1
+# only for swarm
+export TF_VAR_ssh_key_name=wnt-lab-keypair
 
-terraform init
-
-terraform plan \
-  -var "ssh_key_name=YOUR_KEYPAIR_NAME"
-
-terraform apply \
-  -var "ssh_key_name=YOUR_KEYPAIR_NAME"
+make init
+make plan
+make apply
 ```
 
 After `apply`:
@@ -36,28 +34,28 @@ docker node ls
 
 ### iam
 
-In the `iam` directory:
+In the root directory:
 ```bash
 # just in case
 export AWS_REGION=us-east-1
 
-terraform init
-terraform plan 
-terraform apply 
+make init-iam
+make plan-iam 
+make apply-iam 
+
 ```
 
 
 ### ecr
 
-In the `ecr` directory:
+In the root directory:
 ```bash
 # just in case
 export AWS_REGION=us-east-1
 
-terraform init
-terraform plan 
-terraform apply 
+make init-ecr
+make plan-ecr 
+make apply-ecr 
 ```
 
-### todo
-* create a makefile
+# todo
