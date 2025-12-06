@@ -2,6 +2,13 @@ variable "account_id" {
   type = string
 }
 
+resource "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
+
+  # most common audience
+  client_id_list = ["sts.amazonaws.com"]
+}
+
 resource "aws_iam_role" "github_actions_ecr" {
   name = "github-actions-ecr"
 
@@ -11,13 +18,15 @@ resource "aws_iam_role" "github_actions_ecr" {
       {
         Effect = "Allow",
         Principal = {
-          Federated = "arn:aws:iam::${var.account_id}:oidc-provider/token.actions.githubusercontent.com"
+          Federated = aws_iam_openid_connect_provider.github.arn
         },
         Action = "sts:AssumeRoleWithWebIdentity",
         Condition = {
           StringLike = {
-            # Restrict to ONE repo initially for max security
             "token.actions.githubusercontent.com:sub" = "repo:wastingnotime/blog:*"
+          },
+          StringEquals = {
+            "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
         }
       }
