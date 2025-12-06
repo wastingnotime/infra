@@ -154,29 +154,42 @@ data "aws_ami" "al2023_arm" {
 locals {
   user_data = <<-EOF
     #!/bin/bash
-    set -xe
+    set -euxo pipefail
 
-    # Update system
+    # update system
     dnf update -y
 
-    # Install Docker on Amazon Linux 2023
+    # install & prepare docker in al2023
     dnf install -y docker
-
     systemctl enable docker
     systemctl start docker
 
-    # Allow ec2-user to use docker
+    # install git
+    dnf install -y git
+
+    # allow ec2-user to use docker
     usermod -aG docker ec2-user || true
 
-    # Initialize swarm manager (single node for now)
-    PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4 || echo "127.0.0.1")
+    # init swarm manager, single node, only if not already in a swarm
+    if ! docker info 2>/dev/null | grep -q "Swarm: active"; then
+      MANAGER_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+      docker swarm init --advertise-addr "$MANAGER_IP"
+    fi
 
-    # If swarm is not already active, init
-    docker info 2>/dev/null | grep -q "Swarm: active" || \
-      docker swarm init --advertise-addr "$${PRIVATE_IP}" || true
+    # prepare directory for infra repo
+    mkdir -p /opt/wnt
+    cd /opt/wnt
 
-    # Optional: pull some base images so first deploy is faster
-    docker pull nginx:alpine || true
+    # clone infra repo if not present
+    if [ ! -d infra ]; then
+      git clone https://github.com/wastingnotime/infra.git infra
+    fi
+
+    # optional: pull some base images so first deploy is faster
+    # docker pull nginx:alpine || true
+
+    # optional: small log so you know userdata finished
+    echo "$(date -Iseconds) bootstrap complete" >> /var/log/wnt-bootstrap.log
   EOF
 }
 
