@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  blog-nginx:
+    image: 590183855481.dkr.ecr.us-east-1.amazonaws.com/blog:latest
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 32M
+    networks:
+      - wnt_net
+
+networks:
+  wnt_net:
+    external: true
