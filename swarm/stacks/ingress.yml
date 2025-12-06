@@ -28,4 +28,4 @@ networks:
 
 configs:
   haproxy_cfg:
-    file: ./haproxy.cfg
+    file: haproxy.cfg
