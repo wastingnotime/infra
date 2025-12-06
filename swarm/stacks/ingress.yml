@@ -24,7 +24,7 @@ services:
 
 networks:
   wnt_net:
-    driver: overlay
+    external: true
 
 configs:
   haproxy_cfg:
