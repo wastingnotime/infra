@@ -26,6 +26,11 @@ data "aws_subnets" "default" {
   }
 }
 
+# CloudFront origin-facing prefix list for locking down HTTP ingress
+data "aws_prefix_list" "cloudfront_origin" {
+  name = "com.amazonaws.global.cloudfront.origin-facing"
+}
+
 # --- Security Group for Swarm node ---
 
 resource "aws_security_group" "swarm_node" {
@@ -94,6 +99,72 @@ resource "aws_security_group" "swarm_node" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+# --- Security Group for Swarm manager (single pet with EIP) ---
+
+resource "aws_security_group" "swarm_manager" {
+  name        = "swarm-manager-sg"
+  description = "Security group for Docker Swarm manager"
+  vpc_id      = data.aws_vpc.default.id
+
+  # HTTP from CloudFront origin-facing edge locations
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    prefix_list_ids = [data.aws_prefix_list.cloudfront_origin.id]
+  }
+
+  # Swarm control
+  ingress {
+    from_port                    = 2377
+    to_port                      = 2377
+    protocol                     = "tcp"
+    referenced_security_group_id = aws_security_group.swarm_node.id
+  }
+
+  # Swarm gossip TCP
+  ingress {
+    from_port                    = 7946
+    to_port                      = 7946
+    protocol                     = "tcp"
+    referenced_security_group_id = aws_security_group.swarm_node.id
+  }
+
+  # Swarm gossip UDP
+  ingress {
+    from_port                    = 7946
+    to_port                      = 7946
+    protocol                     = "udp"
+    referenced_security_group_id = aws_security_group.swarm_node.id
+  }
+
+  # Swarm overlay network
+  ingress {
+    from_port                    = 4789
+    to_port                      = 4789
+    protocol                     = "udp"
+    referenced_security_group_id = aws_security_group.swarm_node.id
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Optional SSH access (off by default, controlled via variable)
+resource "aws_security_group_rule" "swarm_manager_ssh" {
+  count             = var.enable_ssh_to_manager ? 1 : 0
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = [var.ssh_cidr_manager]
+  security_group_id = aws_security_group.swarm_manager.id
 }
 
 # --- IAM role so the instance can talk to ECR / SSM, etc. ---
@@ -235,7 +306,7 @@ resource "aws_instance" "swarm_manager" {
   instance_type          = var.instance_type
   key_name               = var.ssh_key_name
   subnet_id              = data.aws_subnets.default.ids[0]
-  vpc_security_group_ids = [aws_security_group.swarm_node.id]
+  vpc_security_group_ids = [aws_security_group.swarm_manager.id]
 
   iam_instance_profile = aws_iam_instance_profile.swarm_node_profile.name
   user_data            = base64encode(local.user_data)

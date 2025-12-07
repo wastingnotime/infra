@@ -20,3 +20,15 @@ variable "allowed_ssh_cidr" {
   type        = string
   default     = "0.0.0.0/0" # change to your IP/CIDR later
 }
+
+variable "enable_ssh_to_manager" {
+  description = "Enable SSH access to the Swarm manager"
+  type        = bool
+  default     = false
+}
+
+variable "ssh_cidr_manager" {
+  description = "CIDR allowed to SSH into the Swarm manager when enabled"
+  type        = string
+  default     = "189.34.167.230/32"
+}

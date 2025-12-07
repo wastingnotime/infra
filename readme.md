@@ -58,4 +58,11 @@ make plan-ecr
 make apply-ecr 
 ```
 
+
+### enable/disable ssh for manager
+```bash
+make ssh-enable SSH_CIDR=1.2.3.4/32
+make ssh-disable
+```
+
 # todo
