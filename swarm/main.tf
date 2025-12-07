@@ -26,10 +26,6 @@ data "aws_subnets" "default" {
   }
 }
 
-# CloudFront origin-facing prefix list for locking down HTTP ingress
-data "aws_prefix_list" "cloudfront_origin" {
-  name = "com.amazonaws.global.cloudfront.origin-facing"
-}
 
 # --- Security Group for Swarm node ---
 
@@ -113,39 +109,39 @@ resource "aws_security_group" "swarm_manager" {
     from_port       = 80
     to_port         = 80
     protocol        = "tcp"
-    prefix_list_ids = [data.aws_prefix_list.cloudfront_origin.id]
+    prefix_list_ids = [var.cloudfront_origin_prefix_list_id]
   }
 
   # Swarm control
   ingress {
-    from_port                    = 2377
-    to_port                      = 2377
-    protocol                     = "tcp"
-    referenced_security_group_id = aws_security_group.swarm_node.id
+    from_port       = 2377
+    to_port         = 2377
+    protocol        = "tcp"
+    security_groups = [aws_security_group.swarm_node.id]
   }
 
   # Swarm gossip TCP
   ingress {
-    from_port                    = 7946
-    to_port                      = 7946
-    protocol                     = "tcp"
-    referenced_security_group_id = aws_security_group.swarm_node.id
+    from_port       = 7946
+    to_port         = 7946
+    protocol        = "tcp"
+    security_groups = [aws_security_group.swarm_node.id]
   }
 
   # Swarm gossip UDP
   ingress {
-    from_port                    = 7946
-    to_port                      = 7946
-    protocol                     = "udp"
-    referenced_security_group_id = aws_security_group.swarm_node.id
+    from_port       = 7946
+    to_port         = 7946
+    protocol        = "udp"
+    security_groups = [aws_security_group.swarm_node.id]
   }
 
   # Swarm overlay network
   ingress {
-    from_port                    = 4789
-    to_port                      = 4789
-    protocol                     = "udp"
-    referenced_security_group_id = aws_security_group.swarm_node.id
+    from_port       = 4789
+    to_port         = 4789
+    protocol        = "udp"
+    security_groups = [aws_security_group.swarm_node.id]
   }
 
   egress {
@@ -166,6 +162,7 @@ resource "aws_security_group_rule" "swarm_manager_ssh" {
   cidr_blocks       = [var.ssh_cidr_manager]
   security_group_id = aws_security_group.swarm_manager.id
 }
+
 
 # --- IAM role so the instance can talk to ECR / SSM, etc. ---
 

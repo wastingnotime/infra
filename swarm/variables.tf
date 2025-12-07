@@ -32,3 +32,8 @@ variable "ssh_cidr_manager" {
   type        = string
   default     = "189.34.167.230/32"
 }
+
+variable "cloudfront_origin_prefix_list_id" {
+  description = "AWS-managed prefix list ID for CloudFront origin-facing ranges"
+  type        = string
+}

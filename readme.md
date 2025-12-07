@@ -6,6 +6,8 @@ In the root directory:
 export AWS_REGION=us-east-1
 # only for swarm
 export TF_VAR_ssh_key_name=wnt-lab-keypair
+export TF_VAR_cloudfront_origin_prefix_list_id=pl-3b927c52
+
 
 make init
 make plan
