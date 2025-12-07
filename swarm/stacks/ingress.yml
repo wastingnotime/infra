@@ -16,9 +16,9 @@ services:
           - node.role == manager
       resources:
         limits:
-          memory: 64M
-        reservations:
           memory: 32M
+        reservations:
+          memory: 16M
     networks:
       - wnt_net
 

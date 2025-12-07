@@ -7,9 +7,9 @@ services:
       replicas: 1
       resources:
         limits:
-          memory: 64M
+          memory: 16M
         reservations:
-          memory: 32M
+          memory: 08M
     networks:
       - wnt_net
 
