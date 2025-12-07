@@ -228,16 +228,46 @@ resource "aws_launch_template" "swarm_node" {
   }
 }
 
-# --- Auto Scaling Group (for now: single node) ---
+# --- Single-manager EC2 with stable EIP (phase 1). Workers move to ASG later. ---
 
+resource "aws_instance" "swarm_manager" {
+  ami                    = data.aws_ami.al2023_arm.id
+  instance_type          = var.instance_type
+  key_name               = var.ssh_key_name
+  subnet_id              = data.aws_subnets.default.ids[0]
+  vpc_security_group_ids = [aws_security_group.swarm_node.id]
+
+  iam_instance_profile = aws_iam_instance_profile.swarm_node_profile.name
+  user_data            = base64encode(local.user_data)
+
+  root_block_device {
+    volume_size = 30
+    volume_type = "gp3"
+  }
+
+  tags = {
+    Name = "swarm-manager"
+    Role = "swarm-manager"
+  }
+}
+
+resource "aws_eip" "swarm_manager" {
+  instance = aws_instance.swarm_manager.id
+  domain   = "vpc"
+
+  tags = {
+    Name = "swarm-manager-eip"
+  }
+}
+
+# --- Existing ASG kept but disabled to avoid accidental termination during migration. ---
 resource "aws_autoscaling_group" "swarm_asg" {
-  name                      = "swarm-asg"
-  max_size                  = 1
-  min_size                  = 1
-  desired_capacity          = 1
-  vpc_zone_identifier       = data.aws_subnets.default.ids
-  health_check_type         = "EC2"
-  health_check_grace_period = 120
+  name                = "swarm-asg"
+  max_size            = 0
+  min_size            = 0
+  desired_capacity    = 0
+  vpc_zone_identifier = data.aws_subnets.default.ids
+  health_check_type   = "EC2"
 
   launch_template {
     id      = aws_launch_template.swarm_node.id
@@ -246,7 +276,7 @@ resource "aws_autoscaling_group" "swarm_asg" {
 
   tag {
     key                 = "Name"
-    value               = "swarm-node"
+    value               = "swarm-worker"
     propagate_at_launch = true
   }
 
