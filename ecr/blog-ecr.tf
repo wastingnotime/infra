@@ -10,3 +10,18 @@ resource "aws_ecr_repository" "blog" {
 output "blog_ecr_url" {
   value = aws_ecr_repository.blog.repository_url
 }
+
+resource "aws_ecr_repository" "analytics" {
+  name = "analytics-api"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
+
+output "analytics_ecr_url" {
+  value = aws_ecr_repository.analytics.repository_url
+}
+
+
