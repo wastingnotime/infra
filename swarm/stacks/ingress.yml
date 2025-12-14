@@ -1,31 +1,42 @@
-version: "3.9"
+version: "3.8"
+
+networks:
+  wnt_net:
+    external: true
 
 services:
-  ingress:
-    image: haproxy:2.9
-    configs:
-      - source: haproxy_cfg
-        target: /usr/local/etc/haproxy/haproxy.cfg
+  traefik:
+    image: traefik:v3.1
+    command:
+      - --log.level=INFO
+
+      # Docker Swarm provider
+      - --providers.swarm=true
+      - --providers.swarm.exposedByDefault=false
+      - --providers.swarm.network=wnt_net
+
+      # EntryPoint (HTTP only; TLS offloaded at CloudFront)
+      - --entryPoints.web.address=:80
+
+      # (Optional but useful) dashboard on :8080 inside the cluster only
+      - --api.dashboard=true
+
     ports:
       - "80:80"
+      # If you ever want to reach dashboard from outside, publish 8080 carefully.
+      # - "8080:8080"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    networks:
+      - wnt_net
+
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints:
           - node.role == manager
-      resources:
-        limits:
-          memory: 32M
-        reservations:
-          memory: 16M
-    networks:
-      - wnt_net
-
-networks:
-  wnt_net:
-    external: true
-
-configs:
-  haproxy_cfg:
-    file: haproxy.cfg
+      restart_policy:
+        condition: on-failure

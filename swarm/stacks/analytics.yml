@@ -9,6 +9,20 @@ services:
       - PLAUSIBLE_SHARED_SECRET=${PLAUSIBLE_SHARED_SECRET}
       - AWS_REGION=${AWS_REGION}
     deploy:
+      labels:
+        - traefik.enable=true
+
+        # Higher priority than blog catch-all
+        - traefik.http.routers.analytics.rule=PathPrefix(`/events/plausible`)
+        - traefik.http.routers.analytics.entrypoints=web
+        - traefik.http.routers.analytics.priority=100
+
+        - traefik.http.services.analytics.loadbalancer.server.port=8080
+
+        # (Optional) Health check similar to HAProxy httpchk
+        - traefik.http.services.analytics.loadbalancer.healthcheck.path=/healthz
+        - traefik.http.services.analytics.loadbalancer.healthcheck.interval=10s
+        - traefik.http.services.analytics.loadbalancer.healthcheck.timeout=2s
       replicas: 2
       update_config:
         order: start-first

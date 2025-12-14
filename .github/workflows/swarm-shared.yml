@@ -1,0 +1,71 @@
+name: docker – analytics-api
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'swarm/stacks/ingress.yml'
+      - '.github/workflows/swarm-shared.yml'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      SWARM_INSTANCE_ID: ${{ secrets.SWARM_INSTANCE_ID }}
+      REGION: ${{ vars.AWS_DEFAULT_REGION }}
+
+    steps:
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+          role-to-assume: ${{ secrets.ECR_ROLE_ARN }}
+          role-session-name: ${{ vars.ECR_ROLE_NAME }}
+
+      - name: trigger deploy via ssm
+        id: ssm
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          : "${SWARM_INSTANCE_ID:?missing}"
+          
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$SWARM_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "analytics-api deploy" \
+            --parameters 'commands=[
+              "set -e",
+              "echo Running traefik deploy on $(hostname) at $(date)",
+              "cd /opt/wnt/infra || { echo infra repo missing; exit 1; }",
+              "git fetch origin main",
+              "git reset --hard origin/main",
+              "docker network inspect wnt_net >/dev/null 2>&1 || docker network create --driver=overlay --attachable wnt_net",
+              "docker stack deploy -c swarm/stacks/ingress.yml ingress"
+            ]' \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "command_id=$COMMAND_ID" >> $GITHUB_OUTPUT
+
+      - name: wait for command to finish
+        timeout-minutes: 5
+        run: |
+          aws ssm wait command-executed \
+            --command-id "${{ steps.ssm.outputs.command_id }}" \
+            --instance-id "$SWARM_INSTANCE_ID"
+
+      - name: show command output
+        run: |
+          aws ssm list-command-invocations \
+            --command-id "${{ steps.ssm.outputs.command_id }}" \
+            --details \
+            --output text

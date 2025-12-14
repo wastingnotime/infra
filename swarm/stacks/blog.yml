@@ -2,8 +2,19 @@ version: "3.9"
 
 services:
   blog-nginx:
-    image: 590183855481.dkr.ecr.us-east-1.amazonaws.com/blog:latest
+    image: ${BLOG_IMAGE}
     deploy:
+      labels:
+        - traefik.enable=true
+
+        # Router: anything except analytics path will be handled by blog,
+        # but Traefik uses rule priority, so we just define "catch-all".
+        - traefik.http.routers.blog.rule=PathPrefix(`/`)
+        - traefik.http.routers.blog.entrypoints=web
+        - traefik.http.routers.blog.priority=1
+
+        # Service -> container port
+        - traefik.http.services.blog.loadbalancer.server.port=80
       replicas: 1
       resources:
         limits:
