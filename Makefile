@@ -65,18 +65,18 @@ ssh-enable:
 	@echo ">>> Enabling SSH for Swarm manager"
 	@echo ">>> Detected IP: $(PUBLIC_IP)"
 	@printf "enable_ssh_to_manager = true\nssh_cidr_manager = \"%s/32\"\n" "$(PUBLIC_IP)" > $(TF_VAR_FILE)
-	terraform apply -var-file=$(TF_VAR_FILE)
+	terraform -chdir=swarm apply -var-file=$(TF_VAR_FILE)
 
 ssh-disable:
 	@echo ">>> Disabling SSH (port 22) for Swarm manager"
 	@echo 'enable_ssh_to_manager = false' > $(TF_VAR_FILE)
-	terraform apply -var-file=$(TF_VAR_FILE)
+	terraform -chdir=swarm apply -var-file=$(TF_VAR_FILE)
 
 ssh-temporary:
 	@echo ">>> Opening SSH for $(SSH_WINDOW_MINUTES) minutes"
-	$(MAKE) ssh-open
+	$(MAKE) ssh-enable
 	@echo ">>> SSH is now enabled for your IP ($(PUBLIC_IP))"
 	@echo ">>> Will disable in $(SSH_WINDOW_MINUTES) minutes..."
 	sleep $$(echo "$(SSH_WINDOW_MINUTES) * 60" | bc)
-	$(MAKE) ssh-close
+	$(MAKE) ssh-disable
 	@echo ">>> SSH window closed"
