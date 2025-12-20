@@ -1,7 +1,7 @@
 # infra/Makefile
 
 # List of Terraform components (each is a directory with its own .tf files)
-COMPONENTS ?= iam ecr swarm
+COMPONENTS ?= iam ecr swarm sqs
 
 # Terraform binary (override if needed: `make apply TF=tofu`)
 TF ?= terraform
@@ -18,6 +18,7 @@ help:
 	@echo "  make init-iam      # terraform init in infra/iam"
 	@echo "  make plan-ecr      # terraform plan in infra/ecr"
 	@echo "  make apply-swarm   # terraform apply in infra/swarm"
+	@echo "  make init-sqs      # terraform init in infra/sqs"
 	@echo ""
 	@echo "Override components:"
 	@echo "  make apply COMPONENTS=\"iam ecr\""
