@@ -183,6 +183,35 @@ resource "aws_iam_role" "swarm_node_role" {
   })
 }
 
+# policy to send to SQS
+resource "aws_iam_policy" "swarm_node_sqs_send" {
+  name        = "swarm-node-sqs-send-wnt-plausible-events"
+  description = "Allow swarm nodes to enqueue events to wnt-plausible-events"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "AllowSendToPlausibleEventsQueue",
+        Effect = "Allow",
+        Action = [
+          "sqs:SendMessage",
+          "sqs:GetQueueUrl",
+          "sqs:GetQueueAttributes"
+        ],
+        Resource = "arn:aws:sqs:us-east-1:590183855481:wnt-plausible-events"
+      }
+    ]
+  })
+}
+
+
+# attach sqs policy
+resource "aws_iam_role_policy_attachment" "swarm_node_sqs_send_attach" {
+  role       = aws_iam_role.swarm_node_role.name
+  policy_arn = aws_iam_policy.swarm_node_sqs_send.arn
+}
+
 # Basic: ECR read-only + SSM access (optional but handy)
 resource "aws_iam_role_policy_attachment" "ecr_readonly" {
   role       = aws_iam_role.swarm_node_role.name
