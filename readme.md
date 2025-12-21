@@ -1,3 +1,19 @@
+## infra
+
+### pre-requirements
+
+aws hosted zone already created
+
+### sequence
+- dns
+- acm
+- cloudfront
+- sqs
+- iam
+- ecr
+- swarm
+
+
 ### swarm
 
 In the root directory:
