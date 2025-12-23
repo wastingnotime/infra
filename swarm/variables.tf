@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "instance_type" {
   description = "EC2 instance type for Swarm nodes"
   type        = string
-  default     = "t4g.small" # ARM (Graviton). Use t3.small if x86_64.
+  default     = "t4g.micro" # ARM (Graviton). Use t3.small if x86_64.
 }
 
 variable "ssh_key_name" {
