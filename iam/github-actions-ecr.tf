@@ -25,6 +25,7 @@ resource "aws_iam_role" "github_actions_ecr" {
           StringLike = {
             "token.actions.githubusercontent.com:sub" = [
               "repo:wastingnotime/blog:*",
+              "repo:wastingnotime/contacts:*",
               "repo:wastingnotime/infra:*"
             ]
           },
