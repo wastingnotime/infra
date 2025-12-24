@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  analytics-api:
+    image: ${CONTACTS_API_IMAGE}
+    environment:
+      - HTTP_PORT=8080
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.contacts-api.rule=PathPrefix(`/contacts/api`)
+        - traefik.http.routers.contacts-api.entrypoints=web
+        - traefik.http.routers.contacts-api.priority=100
+        - traefik.http.services.contacts-api.loadbalancer.server.port=8010
+        - traefik.http.services.contacts-api.loadbalancer.healthcheck.path=/healthz
+        - traefik.http.services.contacts-api.loadbalancer.healthcheck.interval=10s
+        - traefik.http.services.contacts-api.loadbalancer.healthcheck.timeout=2s
+      replicas: 1
+      update_config:
+        order: start-first
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+    networks:
+      - wnt_net
+
+networks:
+  wnt_net:
+    external: true
