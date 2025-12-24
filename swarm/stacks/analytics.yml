@@ -23,7 +23,7 @@ services:
         - traefik.http.services.analytics.loadbalancer.healthcheck.path=/healthz
         - traefik.http.services.analytics.loadbalancer.healthcheck.interval=10s
         - traefik.http.services.analytics.loadbalancer.healthcheck.timeout=2s
-      replicas: 2
+      replicas: 1
       update_config:
         order: start-first
         parallelism: 1

@@ -1,14 +1,17 @@
 version: "3.9"
 
 services:
-  analytics-api:
+  contacts-api:
     image: ${CONTACTS_API_IMAGE}
     environment:
-      - HTTP_PORT=8080
+      - ENVIRONMENT=production
+      - MONGO_URI=${MONGO_URI}
     deploy:
       labels:
         - traefik.enable=true
-        - traefik.http.routers.contacts-api.rule=PathPrefix(`/contacts/api`)
+        - traefik.http.routers.contacts-api.rule=PathPrefix(`/api/contacts`)
+        - traefik.http.routers.contacts-api.middlewares=contacts-api-strip
+        - traefik.http.middlewares.contacts-api-strip.stripprefix.prefixes=/api
         - traefik.http.routers.contacts-api.entrypoints=web
         - traefik.http.routers.contacts-api.priority=100
         - traefik.http.services.contacts-api.loadbalancer.server.port=8010
