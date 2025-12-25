@@ -11,14 +11,13 @@ services:
     deploy:
       labels:
         - traefik.enable=true
-
         # Higher priority than blog catch-all
-        - traefik.http.routers.analytics.rule=PathPrefix(`/events/plausible`)
+        - traefik.http.routers.analytics.rule=Path(`/api/event`)
         - traefik.http.routers.analytics.entrypoints=web
         - traefik.http.routers.analytics.priority=100
-
+        - traefik.http.routers.analytics.middlewares=api-event-rewrite
+        - traefik.http.middlewares.api-event-rewrite.replacepath.path=/events/plausible
         - traefik.http.services.analytics.loadbalancer.server.port=8080
-
         # (Optional) Health check similar to HAProxy httpchk
         - traefik.http.services.analytics.loadbalancer.healthcheck.path=/healthz
         - traefik.http.services.analytics.loadbalancer.healthcheck.interval=10s

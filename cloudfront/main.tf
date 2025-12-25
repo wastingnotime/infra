@@ -134,7 +134,7 @@ resource "aws_cloudfront_distribution" "this" {
     max_ttl                    = 0
     min_ttl                    = 0
     origin_request_policy_id   = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
-    path_pattern               = "/api/event"
+    path_pattern               = "/api/*"
     realtime_log_config_arn    = null
     response_headers_policy_id = null
     smooth_streaming           = false
@@ -142,11 +142,6 @@ resource "aws_cloudfront_distribution" "this" {
     trusted_key_groups         = []
     trusted_signers            = []
     viewer_protocol_policy     = "redirect-to-https"
-
-    function_association {
-      event_type   = "viewer-request"
-      function_arn = "arn:aws:cloudfront::590183855481:function/RewriteApiEventToEventsPlausible"
-    }
 
     grpc_config {
       enabled = false
