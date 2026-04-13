@@ -26,6 +26,7 @@ resource "aws_iam_role" "github_actions_ecr" {
             "token.actions.githubusercontent.com:sub" = [
               "repo:wastingnotime/blog:*",
               "repo:wastingnotime/contacts:*",
+              "repo:wastingnotime/contacts-v2:*",
               "repo:wastingnotime/infra:*"
             ]
           },
