@@ -2,10 +2,20 @@ version: "3.9"
 
 services:
   contacts-api:
-    image: ${CONTACTS_API_IMAGE}
+    image: 590183855481.dkr.ecr.us-east-1.amazonaws.com/contacts-v2-api:30c0ab0cd77afa644edcfbb39cce1a42e51c7eef
     environment:
       - ENVIRONMENT=production
-      - MONGO_URI=${MONGO_URI}
+      - CONTACTS_V2_CONTACT_STORE_MODE=sqlite
+      - CONTACTS_V2_MESSAGE_STORE_MODE=sqlite
+      - CONTACTS_V2_CONTACTS_DB_PATH=/var/lib/contacts/contacts.db
+      - CONTACTS_V2_MESSAGE_DB_PATH=/var/lib/contacts/events.db
+      - CONTACTS_V2_PERSIST_LOCAL_STATE=true
+      - CONTACTS_V2_AUTH_MODE=claims
+      - CONTACTS_V2_ADMIN_SUBJECT=admin-user
+      - CONTACTS_V2_ADMIN_ROLES=admin
+      - CONTACTS_V2_ID_SEQUENCE=contact-001
+      - CONTACTS_V2_API_HOST=0.0.0.0
+      - CONTACTS_V2_API_PORT=8010
     deploy:
       labels:
         - traefik.enable=true
