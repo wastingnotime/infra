@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   contacts-api:
-    image: 590183855481.dkr.ecr.us-east-1.amazonaws.com/contacts-v2-api:30c0ab0cd77afa644edcfbb39cce1a42e51c7eef
+    image: 590183855481.dkr.ecr.us-east-1.amazonaws.com/contacts-v2-api:a8431e00f8827f31a7ba81b399b7b4253d332bfc
     environment:
       - ENVIRONMENT=production
       - CONTACTS_V2_CONTACT_STORE_MODE=sqlite
