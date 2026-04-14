@@ -16,6 +16,13 @@ services:
       - CONTACTS_V2_ID_SEQUENCE=contact-001
       - CONTACTS_V2_API_HOST=0.0.0.0
       - CONTACTS_V2_API_PORT=8010
+      - CONTACTS_V2_OBSERVABILITY_ENABLED=true
+      - CONTACTS_V2_AXIOM_DOMAIN=us-east-1.aws.edge.axiom.co
+      - CONTACTS_V2_AXIOM_TOKEN=${CONTACTS_V2_AXIOM_TOKEN}
+      - CONTACTS_V2_AXIOM_TRACES_DATASET=contacts-v2-traces
+      - CONTACTS_V2_AXIOM_LOGS_DATASET=contacts-v2-logs
+      - CONTACTS_V2_OTEL_SERVICE_NAME=contacts-v2-api
+      - CONTACTS_V2_OTEL_SERVICE_VERSION=0.1.0
     deploy:
       labels:
         - traefik.enable=true

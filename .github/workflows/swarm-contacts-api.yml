@@ -20,6 +20,7 @@ jobs:
     env:
       SWARM_INSTANCE_ID: ${{ secrets.SWARM_INSTANCE_ID }}
       REGION: ${{ vars.AWS_DEFAULT_REGION }}
+      CONTACTS_V2_AXIOM_TOKEN: ${{ secrets.CONTACTS_V2_AXIOM_TOKEN }}
 
     steps:
       - name: configure aws credentials
@@ -36,8 +37,9 @@ jobs:
           set -euo pipefail
           : "${SWARM_INSTANCE_ID:?missing}"
           : "${REGION:?missing}"
+          : "${CONTACTS_V2_AXIOM_TOKEN:?missing}"
 
-          commands=$(jq -cn '[
+          commands=$(jq -cn --arg axiom_token "$CONTACTS_V2_AXIOM_TOKEN" '[
             "set -e",
             "echo Running contacts-api deploy on $(hostname) at $(date)",
             "cd /opt/wnt/infra || { echo infra repo missing; exit 1; }",
@@ -47,7 +49,7 @@ jobs:
             "IMAGE=$(sed -n '\''s/^    image: //p'\'' swarm/stacks/contacts-api.yml | head -n1)",
             "test -n \"$IMAGE\" || { echo contacts-api image missing in stack file; exit 1; }",
             "aws ecr get-login-password --region '"${REGION}"' | docker login --username AWS --password-stdin \"${IMAGE%%/*}\"",
-            "docker stack deploy -c swarm/stacks/contacts-api.yml --with-registry-auth contacts-api"
+            "CONTACTS_V2_AXIOM_TOKEN=\"" + $axiom_token + "\" docker stack deploy -c swarm/stacks/contacts-api.yml --with-registry-auth contacts-api"
           ]')
 
           COMMAND_ID=$(aws ssm send-command \
