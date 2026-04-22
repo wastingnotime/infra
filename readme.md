@@ -1,5 +1,8 @@
 ## infra
 
+This repository is no longer in use.
+It is kept as a public archive for reference only.
+
 ### pre-requirements
 
 aws hosted zone already created
